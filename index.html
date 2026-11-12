@@ -44,6 +44,8 @@ button{ font:inherit; color:inherit; cursor:pointer }
 svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round }
 
 .app{ height:100%; height:100dvh; display:grid; grid-template-rows:auto auto 1fr auto }
+/* fixed rows, so a hidden notice does not shift the transcript into the wrong track */
+.top{ grid-row:1 } .notice{ grid-row:2 } .feed{ grid-row:3 } .dock{ grid-row:4 }
 .band{ padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)) }
 .wrap{ max-width:820px; margin:0 auto; width:100% }
 
@@ -95,24 +97,30 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
 .dot{ width:9px; height:9px; border-radius:50%; background:var(--faint); flex:none }
 .dot.on{ background:var(--c, var(--fr)); animation:pulse 1.4s ease-out infinite }
 .status .sep{ color:var(--faint) }
-.controls{ display:grid; grid-template-columns:auto 1fr; gap:10px }
-.dir{ display:grid; grid-template-columns:1fr 1fr; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--bg) }
-.dir button{ border:0; background:transparent; padding:0 16px; min-height:56px; color:var(--muted); font-weight:500; white-space:nowrap }
-.dir button + button{ border-left:1px solid var(--line) }
+.controls{ display:grid; grid-template-columns:auto auto 1fr; gap:10px }
+.controls.nosrc{ grid-template-columns:auto 1fr }
+.dir, .srcsel{ display:grid; grid-template-columns:1fr 1fr; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--bg) }
+.dir button, .srcsel button{ border:0; background:transparent; padding:0 16px; min-height:56px; color:var(--muted); font-weight:500; white-space:nowrap; display:flex; align-items:center; justify-content:center; gap:6px }
+.dir button + button, .srcsel button + button{ border-left:1px solid var(--line) }
+.srcsel svg{ width:17px; height:17px; flex:none }
 .dir button[data-dir="zh"][aria-checked="true"]{ background:var(--zh); color:var(--on-accent) }
 .dir button[data-dir="fr"][aria-checked="true"]{ background:var(--fr); color:var(--on-accent) }
+.srcsel button[aria-checked="true"]{ background:var(--fg); color:var(--bg) }
 .dock[data-from="zh"]{ --c:var(--zh) }
 .dock[data-from="fr"]{ --c:var(--fr) }
 .go{ display:flex; align-items:center; justify-content:center; gap:10px; min-height:56px; border:1.5px solid var(--c); border-radius:10px; background:var(--c); color:var(--on-accent); font-size:1.1rem; font-weight:700; box-shadow:inset 0 -3px 0 rgba(0,0,0,.2); transition:transform .08s }
 .go:active{ transform:translateY(1px) }
 .go svg{ width:22px; height:22px }
 .go.on{ background:var(--surface); color:var(--c); box-shadow:inset 0 -3px 0 var(--line) }
+.go:disabled{ opacity:.6; cursor:default }
 @keyframes pulse{ 0%{ box-shadow:0 0 0 0 var(--c, var(--fr)) } 80%,100%{ box-shadow:0 0 0 7px transparent } }
-@media (max-width:560px){
-  .controls{ grid-template-columns:1fr }
-  .dir button{ min-height:46px; padding:0 8px }
-  .brand .tag{ display:none }
+@media (max-width:900px){
+  .controls, .controls.nosrc{ grid-template-columns:1fr 1fr }
+  .controls.nosrc .dir, .go{ grid-column:1 / -1 }
+  .dir button, .srcsel button{ min-height:46px; padding:0 8px; font-size:.9rem }
 }
+@media (max-width:560px){ .brand .tag{ display:none } }
+@media (max-width:370px){ .controls, .controls.nosrc{ grid-template-columns:1fr } }
 
 /* Toast */
 .toast{ position:fixed; left:50%; top:calc(env(safe-area-inset-top, 0px) + 64px); transform:translateX(-50%); max-width:calc(100% - 32px); background:var(--fg); color:var(--bg); padding:8px 14px; border-radius:8px; font-size:.9rem; z-index:30; box-shadow:0 6px 20px rgba(0,0,0,.18) }
@@ -135,6 +143,9 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
 .model{ display:grid; grid-template-columns:auto 1fr; align-items:center; gap:10px; font-size:.85rem; color:var(--muted) }
 #dsResult{ flex:1; min-width:0; align-self:center; overflow-wrap:anywhere }
 .btn:disabled{ opacity:.6; cursor:default }
+#sxResult{ flex:1; min-width:0; align-self:center; overflow-wrap:anywhere }
+.panel textarea{ width:100%; min-height:96px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--fg); font:inherit; line-height:1.5; resize:vertical }
+.panel textarea::placeholder{ color:var(--faint) }
 .fine{ margin:0; color:var(--muted); font-size:.82rem }
 .seg{ display:grid; grid-template-columns:repeat(3,1fr); border:1px solid var(--line); border-radius:8px; overflow:hidden }
 .seg label{ text-align:center; padding:9px 4px; cursor:pointer }
@@ -184,6 +195,7 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
         <ul>
           <li>讲话人一直说，译文就一段段跟上，不用等一句话说完。</li>
           <li>灰色字是还在识别的部分，定稿后变成正式译文。</li>
+          <li>要翻译电脑里播放的视频、网课或网页会议，把声音来源切到「电脑声音」，不用外放给麦克风听。</li>
           <li>投屏或给别人看时，点右上角的字幕按钮只显示译文，在设置里调大字号。</li>
         </ul>
         <section class="para" data-from="zh">
@@ -202,10 +214,14 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
         <span id="dot" class="dot"></span><span id="stText">未开始</span>
         <span id="stTime"></span><span id="stLat" title="从定稿到出译文的平均时间"></span>
       </div>
-      <div class="controls">
+      <div id="controls" class="controls">
         <div class="dir" role="radiogroup" aria-label="翻译方向">
           <button type="button" role="radio" data-dir="fr" aria-checked="true">法语 → 中文</button>
           <button type="button" role="radio" data-dir="zh" aria-checked="false">中文 → 法语</button>
+        </div>
+        <div id="srcSel" class="srcsel" role="radiogroup" aria-label="声音来源">
+          <button type="button" role="radio" data-src="mic" aria-checked="true"><svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1M12 18v4"/></svg>麦克风</button>
+          <button type="button" role="radio" data-src="system" aria-checked="false"><svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>电脑声音</button>
         </div>
         <button id="btnGo" class="go" type="button"></button>
       </div>
@@ -216,6 +232,23 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
 <div id="sheet" class="sheet" hidden>
   <div class="panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <header><h2 id="sheetTitle">设置和记录</h2><button id="sheetClose" class="icon" type="button" aria-label="关闭"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+
+    <fieldset>
+      <legend>语音识别</legend>
+      <label class="opt"><input type="radio" name="asr" id="asrChrome" value="chrome"><b>Chrome 自带（免费）</b><small>只能在 Chrome 里用，页面切到后台会暂停，准确度一般。</small></label>
+      <label class="opt"><input type="radio" name="asr" id="asrSoniox" value="soniox"><b>Soniox（更准）</b><small>中文和法语都准得多，会自动加标点。任何浏览器都能用，手机也行，页面在后台也不停。按用量付费，大约 0.12 美元一小时。</small></label>
+      <div id="sxRow" class="keyrow">
+        <input id="sxKey" type="password" placeholder="Soniox API Key" aria-label="Soniox API Key" spellcheck="false" autocomplete="off">
+        <div class="row"><button id="sxTest" class="btn" type="button">测试连接</button><span id="sxResult" class="fine" role="status"></span></div>
+        <p class="fine">Key 只保存在这个浏览器里，在 <a href="https://console.soniox.com" target="_blank" rel="noopener">console.soniox.com</a> 注册后创建。没填 Key 时仍用 Chrome 自带识别。</p>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>专有名词</legend>
+      <textarea id="terms" rows="4" spellcheck="false" aria-label="专有名词，每行一个" placeholder="每行一个，例如：&#10;马克龙&#10;欧盟委员会&#10;TotalEnergies"></textarea>
+      <p class="fine">填上这次会出现的人名、机构名和术语。Soniox 会优先识别成这些词；DeepSeek 翻译时也会按它们纠正同音错字。</p>
+    </fieldset>
 
     <fieldset>
       <legend>翻译引擎</legend>
@@ -251,10 +284,12 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
     <fieldset>
       <legend>使用提示</legend>
       <ul class="tips">
-        <li>让麦克风尽量靠近讲话人或音箱，识别会准很多。</li>
-        <li>朗读译文时请戴耳机，外放的声音会被麦克风收进去。</li>
-        <li>翻译电脑上播放的视频时，用外放让麦克风听到即可。</li>
-        <li>语音识别由浏览器的云端服务完成，推荐用 Chrome 或 Edge，需要联网。</li>
+        <li><b>识别不准时</b>：改用 Soniox 识别，并填上专有名词。用麦克风时，让它尽量靠近讲话人或音箱；能用「电脑声音」就别用麦克风。</li>
+        <li><b>翻译电脑里的声音</b>：声音来源选「电脑声音」，点开始后在弹窗里选中播放视频或会议的标签页，并打开「分享标签页音频」。用 Chrome 自带识别时需要电脑版 Chrome 135 或更新版本；用 Soniox 时 Edge 也可以。</li>
+        <li>要翻译 Zoom、Teams 这类软件的声音，在弹窗里选「整个屏幕」并打开「分享系统音频」。Windows 可以；Mac 需要 macOS 14.2 和 Chrome 141 或更新版本。</li>
+        <li>用 Chrome 自带识别时，页面切到后台会暂停识别，要把这个标签页拖出来单独成一个窗口，和视频或会议并排放。用 Soniox 没有这个限制。</li>
+        <li>分享整个屏幕时不朗读译文，因为朗读声也会被收进去。用麦克风时朗读译文请戴耳机。</li>
+        <li>想像软件一样单独打开：在 Chrome 菜单里选「投放、保存和分享」→「将页面作为应用安装」。</li>
         <li>空格键可以开始或停止。</li>
       </ul>
     </fieldset>
@@ -313,6 +348,30 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
     }
     return rest;
   }
+  // The recognizer often rewrites a sentence when it finalizes it (adds punctuation, fixes a
+  // word). To find where the final text continues after the chunks already sent, align on
+  // letters and digits only instead of trusting character offsets.
+  function normMap(s) {
+    const n = [], at = [];
+    for (let i = 0; i < s.length; i++) { const c = s[i].toLowerCase(); if (/[\p{L}\p{N}]/u.test(c)) { n.push(c); at.push(i); } }
+    return { n, at };
+  }
+  function alignRest(lang, final, sent, fallbackDone) {
+    const S = normMap(sent).n, F = normMap(final);
+    if (!S.length) return final;
+    const k = F.n.length;
+    let prev = Array.from({ length: k + 1 }, (_, j) => j), cur = new Array(k + 1);
+    for (let i = 1; i <= S.length; i++) {
+      cur[0] = i;
+      for (let j = 1; j <= k; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (S[i - 1] === F.n[j - 1] ? 0 : 1));
+      [prev, cur] = [cur, prev];
+    }
+    let best = 0;
+    for (let j = 1; j <= k; j++) if (prev[j] < prev[best]) best = j;   // ties keep the shorter prefix: repeat rather than drop
+    if (prev[best] > Math.max(2, S.length * 0.4)) return restAfter(lang, final, fallbackDone);
+    const cut = best === 0 ? 0 : F.at[best - 1] + 1;
+    return final.slice(cut).replace(/^[\s,.;:!?…，。！？；：、]+/, '');
+  }
   /*CHUNK-END*/
 
   /* ================= storage & settings ================= */
@@ -321,8 +380,10 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
     set(k, v) { try { localStorage.setItem('zhfr2.' + k, JSON.stringify(v)); } catch {} },
   };
   const DS_MODEL = 'deepseek-flash';           // DeepSeek's current chat model ID (deepseek-chat was retired 2026-07-24)
-  const settings = Object.assign({ engine: 'free', dsKey: '', dsModel: '', size: 'm', autoRead: false, view: 'both', dir: 'fr' }, store.get('settings', {}));
+  const settings = Object.assign({ engine: 'free', dsKey: '', dsModel: '', size: 'm', autoRead: false, view: 'both', dir: 'fr', source: 'mic', asr: 'chrome', sxKey: '', terms: '' }, store.get('settings', {}));
   if (!['zh', 'fr'].includes(settings.dir)) settings.dir = 'fr';
+  if (!['chrome', 'soniox'].includes(settings.asr)) settings.asr = 'chrome';
+  if (!['mic', 'system'].includes(settings.source)) settings.source = 'mic';
   if (!['free', 'deepseek'].includes(settings.engine)) settings.engine = 'free';
   const saveSettings = () => store.set('settings', settings);
 
@@ -495,14 +556,16 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
   async function viaDeepSeek(text, from, to, { context, onText, preview } = {}) {
     const src = from === 'zh' ? 'Mandarin Chinese' : 'French';
     const dst = to === 'zh' ? 'Simplified Chinese' : 'French';
-    const system =
+    let system =
       'You are a professional simultaneous interpreter working from ' + src + ' into ' + dst + '. ' +
       "The speaker's words arrive in short consecutive chunks from live speech recognition, often cut mid-sentence" +
       (preview ? ', and this chunk is still being spoken' : '') + '. ' +
       'Translate ONLY the new chunk into ' + dst + ' so that it reads as a natural continuation of the translation so far. ' +
       'Do not repeat earlier content, do not add anything that is not in the chunk, and do not finish a sentence the speaker has not finished. ' +
-      'The recognizer makes homophone errors and gives no punctuation: infer the intended words from context and punctuate naturally. ' +
+      'The recognizer makes homophone errors and may leave out punctuation: infer the intended words from context and punctuate naturally. ' +
       'Output only the translation of the new chunk, with no notes, quotes or pinyin.';
+    const terms = glossary();
+    if (terms.length) system += ' Names and terms that may come up (when the recognizer garbles one of them, use this spelling): ' + terms.join('; ') + '.';
     let user = '';
     if (context && context.src) user += 'Source so far:\n…' + context.src + '\n\nTranslation so far:\n…' + context.tr + '\n\n';
     user += 'New chunk:\n' + text;
@@ -610,25 +673,99 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
   /* ================= speech recognition ================= */
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const isAndroid = /Android/i.test(navigator.userAgent);
+  const isMobile = navigator.userAgentData ? !!navigator.userAgentData.mobile : /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
   const STABLE_MS = 1100;
-  let running = false, rec = null, sessionStart = 0, quickEnds = 0, netErrors = 0;
+  let running = false, starting = false, rec = null, sessionStart = 0, quickEnds = 0, netErrors = 0;
   let utt = null;                                   // { idx, done, hist: [{t, text}] }
+  const quiet = new WeakSet();                      // recognizers we ended on purpose: ignore their errors
 
-  const ERRORS = {
-    'not-allowed': '没有麦克风权限。请点地址栏左边的图标，把「麦克风」设为允许，然后重新开始。',
-    'service-not-allowed': '浏览器不允许这个页面使用语音识别。请用 Chrome 或 Edge 打开，或把页面放到 https 网址上。',
-    'audio-capture': '找不到麦克风。请检查麦克风是否连接好、是否被别的程序占用。',
-    'language-not-supported': '这个浏览器不支持该语言的语音识别，请换 Chrome 或 Edge。',
-  };
+  /* --- computer audio ---
+     Chrome desktop 135+ takes an audio track in SpeechRecognition.start(track).
+     Other browsers ignore the argument and would quietly listen to the microphone
+     instead, so the feature is offered only where it is known to work. */
+  function chromeMajor() {
+    const d = navigator.userAgentData;
+    if (d && Array.isArray(d.brands)) {
+      const b = d.brands.find((x) => x.brand === 'Google Chrome');
+      return b ? parseInt(b.version, 10) || 0 : 0;
+    }
+    const ua = navigator.userAgent;
+    if (/Edg\/|OPR\/|SamsungBrowser|YaBrowser/.test(ua)) return 0;
+    const m = ua.match(/Chrome\/(\d+)/);
+    return m ? +m[1] : 0;
+  }
+  const canSystem = !!SR && !isMobile && chromeMajor() >= 135 && !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia);
+  const SURFACE = { browser: '标签页', window: '窗口', monitor: '整个屏幕' };
+  let capture = null;                               // { stream, track, surface }
+  let hiddenAt = 0, hiddenWarned = false;
+  const fromComputer = () => settings.source === 'system';
+  const ttsBlocked = () => !!(capture && capture.surface === 'monitor');   // our own reading would be captured
+  const systemUnsupported = () => isMobile
+    ? '手机上不能识别电脑声音，只能用麦克风。'
+    : useSoniox()
+      ? '这个浏览器不能分享电脑声音。请用 Chrome 或 Edge 打开。'
+      : '用 Chrome 自带识别时，识别电脑声音需要电脑版 Chrome 135 或更新的版本。可以换成 Chrome，或在设置里改用 Soniox 识别（Edge 也能用）。';
+
+  async function captureComputerAudio() {
+    let controller = null;
+    if (typeof CaptureController === 'function') {
+      controller = new CaptureController();
+      // Keep this page in front after the picker (Chrome otherwise jumps to the shared tab).
+      try { controller.setFocusBehavior('no-focus-change'); } catch {}
+    }
+    const opts = {
+      video: { frameRate: { ideal: 1, max: 5 } },      // required by the picker; never displayed
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, suppressLocalAudioPlayback: false },
+      systemAudio: 'include', selfBrowserSurface: 'exclude', surfaceSwitching: 'include',
+      preferCurrentTab: false, monitorTypeSurfaces: 'include',
+    };
+    if (controller) opts.controller = controller;
+    const stream = await navigator.mediaDevices.getDisplayMedia(opts);
+    if (controller) { try { controller.setFocusBehavior('no-focus-change'); } catch {} } // older Chrome only accepts it here
+    const track = stream.getAudioTracks()[0];
+    const video = stream.getVideoTracks()[0];
+    const surface = (video && video.getSettings && video.getSettings().displaySurface) || '';
+    if (!track) {
+      stream.getTracks().forEach((t) => t.stop());
+      const e = new Error('no audio'); e.code = 'no-audio'; e.surface = surface; throw e;
+    }
+    stream.getTracks().forEach((t) => t.addEventListener('ended', onShareEnded));
+    return { stream, track, surface };
+  }
+  function releaseCapture() {
+    if (!capture) return;
+    const c = capture; capture = null;
+    c.stream.getTracks().forEach((t) => { t.removeEventListener('ended', onShareEnded); t.stop(); });
+  }
+  function onShareEnded() {                         // the viewer pressed Chrome's "Stop sharing"
+    if (!capture) return;
+    releaseCapture();
+    if (running && fromComputer()) { stop(); toast('已停止分享，同传结束'); }
+  }
+
+  function errorText(code) {
+    const sys = fromComputer();
+    return ({
+      'not-allowed': sys
+        ? '浏览器不允许这个页面做语音识别。请点地址栏左边的图标，把「麦克风」设为允许，然后重新开始。'
+        : '没有麦克风权限。请点地址栏左边的图标，把「麦克风」设为允许，然后重新开始。',
+      'service-not-allowed': '浏览器不允许这个页面使用语音识别。请用 Chrome 打开，或把页面放到 https 网址上。',
+      'audio-capture': sys
+        ? '收不到电脑声音。请重新开始，选中要翻译的标签页或屏幕，并打开分享音频的开关。'
+        : '找不到麦克风。请检查麦克风是否连接好、是否被别的程序占用。',
+      'language-not-supported': '这个浏览器不支持该语言的语音识别，请换 Chrome。',
+    })[code];
+  }
+  function endRec() { if (rec) { quiet.add(rec); rec.stop(); } }
 
   function onFinal(lang, idx, text) {
     let rest = text;
     if (utt && utt.idx === idx) {
       if (utt.done > text.length) {               // what we sent ran into the next result
-        utt = { idx: idx + 1, done: utt.done - text.length, hist: [] };
+        utt = { idx: idx + 1, done: utt.done - text.length, sent: '', hist: [] };
         return;
       }
-      rest = restAfter(lang, text, utt.done);
+      rest = alignRest(lang, text, utt.sent, utt.done);
       utt = null;
     }
     commit(lang, rest);
@@ -636,7 +773,7 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
 
   function onInterim(lang, idx, text) {
     const now = Date.now();
-    if (!utt || utt.idx !== idx) utt = { idx, done: 0, hist: [] };
+    if (!utt || utt.idx !== idx) utt = { idx, done: 0, sent: '', hist: [] };
     utt.hist.push({ t: now, text });
     while (utt.hist.length > 1 && utt.hist[1].t <= now - STABLE_MS) utt.hist.shift();
     const ref = utt.hist[0];
@@ -645,6 +782,7 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
       if (cut > utt.done) {
         const chunk = text.slice(utt.done, cut);
         utt.done = cut;
+        utt.sent += (utt.sent && lang === 'fr' ? ' ' : '') + chunk;
         commit(lang, chunk);
       }
     }
@@ -676,44 +814,294 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
       else setLive(null);
     };
     r.onerror = (ev) => {
-      if (ev.error === 'no-speech' || ev.error === 'aborted') return;
+      if (quiet.has(r) || ev.error === 'no-speech' || ev.error === 'aborted') return;
       if (ev.error === 'network') {
         netErrors++;
         if (netErrors >= 3) { fatal = true; running = false; notice('语音识别连不上服务器（需要联网，Chrome 用 Google 的识别服务）。请检查网络后重新开始。'); }
         return;
       }
-      if (ERRORS[ev.error]) { fatal = true; running = false; notice(ERRORS[ev.error]); }
+      const msg = errorText(ev.error);
+      if (msg) { fatal = true; running = false; notice(msg); }
     };
     r.onend = () => {
       if (lastInterim.trim() && lastIdx >= 0) {      // keep whatever was heard but not finalized
-        const done = utt && utt.idx === lastIdx ? utt.done : 0;
-        commit(lang, restAfter(lang, lastInterim, done));
+        const mine = utt && utt.idx === lastIdx;
+        commit(lang, mine ? alignRest(lang, lastInterim, utt.sent, utt.done) : lastInterim);
       }
       utt = null;
       setLive(null);
       if (rec === r) rec = null;
-      quickEnds = Date.now() - startedAt < 1000 ? quickEnds + 1 : 0;
-      if (quickEnds >= 5) { running = false; quickEnds = 0; notice('语音识别反复中断，已经停下。请检查网络和麦克风后重新开始。'); }
-      if (running && !fatal && !document.hidden) setTimeout(() => { if (running && !rec) openRec(settings.dir); }, netErrors ? 1000 : 0);
-      if (!running) { releaseWake(); stopClock(); }
+      if (!document.hidden) quickEnds = Date.now() - startedAt < 1000 ? quickEnds + 1 : 0;
+      if (quickEnds >= 5) {
+        running = false; quickEnds = 0;
+        notice('语音识别反复中断，已经停下。请检查网络' + (fromComputer() ? '' : '和麦克风') + '后重新开始。');
+      }
+      if (running && !fatal) {
+        // In the background Chrome may refuse to listen: computer audio keeps trying slowly, the microphone waits for the page to return.
+        const delay = document.hidden ? 3000 : netErrors ? 1000 : 0;
+        setTimeout(() => { if (running && !rec && (fromComputer() || !document.hidden)) openRec(settings.dir); }, delay);
+      }
+      if (!running) { releaseWake(); stopClock(); releaseCapture(); }
       renderStatus();
     };
-    try { r.start(); rec = r; }
-    catch (err) { running = false; notice('语音识别启动失败：' + ((err && err.message) || err)); }
+    const track = fromComputer() ? capture && capture.track : null;
+    if (fromComputer() && (!track || track.readyState !== 'live')) {
+      stop(); notice('电脑声音的分享已经结束。要继续，请重新点「开始同传」。');
+      return;
+    }
+    try { if (track) r.start(track); else r.start(); rec = r; }
+    catch (err) {
+      running = false; releaseCapture();
+      notice((track ? '这个浏览器没法识别电脑声音：' : '语音识别启动失败：') + ((err && err.message) || err));
+    }
     renderStatus();
   }
 
-  function start() {
-    if (!SR) { notice('这个浏览器不支持语音识别（例如 Firefox）。请用 Chrome 或 Edge 打开。'); return; }
+  /* ================= Soniox recognition =================
+     Audio (microphone or shared computer audio) → 16 kHz PCM in an AudioWorklet →
+     Soniox real-time WebSocket. Final words are cut into chunks at the punctuation
+     Soniox adds and handed to the same translation pipeline. A WebSocket keeps
+     working when the page is in the background, unlike Chrome's built-in recognizer. */
+  const SONIOX_URL = 'wss://stt-rt.soniox.com/transcribe-websocket';
+  const SONIOX_MODEL = 'stt-rt-v6';
+  const canCapture = !isMobile && !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia);
+  const useSoniox = () => settings.asr === 'soniox' && !!settings.sxKey;
+  const glossary = () => (settings.terms || '').split(/[\n,，;；、]+/).map((x) => x.trim()).filter(Boolean).slice(0, 300);
+  let activeAsr = 'chrome';                         // engine of the running session
+  let audio = null;                                 // { ctx, src, node, mute, mic }
+  let sx = null;                                    // current Soniox connection
+  let sxRetries = 0, sxOpenedOnce = false;
+  const backlog = [];                               // audio recorded while (re)connecting, up to 5 s
+
+  const PCM_WORKLET = `
+    class Pcm16k extends AudioWorkletProcessor {
+      constructor() { super(); this.step = sampleRate / 16000; this.acc = 0; this.sum = 0; this.cnt = 0; this.buf = new Int16Array(1600); this.n = 0; }
+      process(inputs) {
+        const inp = inputs[0];
+        if (!inp || !inp.length) return true;
+        const chs = inp.length, len = inp[0].length;
+        for (let i = 0; i < len; i++) {
+          let x = 0;
+          for (let c = 0; c < chs; c++) x += inp[c][i];
+          this.sum += x / chs; this.cnt++; this.acc += 1;
+          if (this.acc >= this.step) {            // average the samples of each 1/16000 s
+            this.acc -= this.step;
+            const v = Math.max(-1, Math.min(1, this.sum / this.cnt));
+            this.buf[this.n++] = v < 0 ? v * 0x8000 : v * 0x7fff;
+            this.sum = 0; this.cnt = 0;
+            if (this.n === this.buf.length) { this.port.postMessage(this.buf.buffer, [this.buf.buffer]); this.buf = new Int16Array(1600); this.n = 0; }
+          }
+        }
+        return true;
+      }
+    }
+    registerProcessor('pcm16k', Pcm16k);`;
+
+  async function openAudio(ctx, stream) {
+    const url = URL.createObjectURL(new Blob([PCM_WORKLET], { type: 'text/javascript' }));
+    try { await ctx.audioWorklet.addModule(url); } finally { URL.revokeObjectURL(url); }
+    const src = ctx.createMediaStreamSource(stream);
+    const node = new AudioWorkletNode(ctx, 'pcm16k', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [1] });
+    const mute = ctx.createGain(); mute.gain.value = 0;   // keeps the graph running without playing anything
+    src.connect(node); node.connect(mute); mute.connect(ctx.destination);
+    node.port.onmessage = (ev) => sxSend(ev.data);
+    if (ctx.state !== 'running') await ctx.resume();
+    return { ctx, src, node, mute, mic: null };
+  }
+  function closeAudio() {
+    backlog.length = 0;
+    if (!audio) return;
+    const a = audio; audio = null;
+    a.node.port.onmessage = null;
+    try { a.src.disconnect(); a.node.disconnect(); a.mute.disconnect(); } catch {}
+    if (a.mic) a.mic.getTracks().forEach((t) => { t.onended = null; t.stop(); });
+    a.ctx.close().catch(() => {});
+  }
+  function sxSend(buf) {
+    if (sx && sx.started && !sx.closing && sx.ws.readyState === WebSocket.OPEN) sx.ws.send(buf);
+    else { backlog.push(buf); if (backlog.length > 50) backlog.shift(); }
+  }
+
+  function sxOpen(lang) {
+    let ws;
+    try { ws = new WebSocket(SONIOX_URL, ['soniox-api-key', settings.sxKey]); }
+    catch { stop(); notice('Soniox API Key 的格式不对，请在设置里检查。'); return; }
+    ws.binaryType = 'arraybuffer';
+    const s = { ws, lang, started: false, closing: false, final: '', live: '', lastFinalAt: Date.now(), endpoint: false, error: null, timers: [] };
+    sx = s;
+    ws.onopen = () => {
+      const cfg = { model: SONIOX_MODEL, audio_format: 'pcm_s16le', sample_rate: 16000, num_channels: 1,
+        language_hints: [lang], enable_endpoint_detection: true };
+      const terms = glossary();
+      if (terms.length) cfg.context = { terms };
+      ws.send(JSON.stringify(cfg));
+      s.started = true; sxOpenedOnce = true;
+      if (sx === s) while (backlog.length) ws.send(backlog.shift());
+      s.timers.push(setInterval(() => { if (!s.closing && ws.readyState === WebSocket.OPEN) ws.send('{"type":"keepalive"}'); }, 15000));
+      s.timers.push(setInterval(() => {             // a pause without an endpoint: send what is already final
+        if (s.final.trim() && !s.live.trim() && Date.now() - s.lastFinalAt > 1200) sxFlush(s, true);
+      }, 400));
+    };
+    ws.onmessage = (ev) => { let m; try { m = JSON.parse(ev.data); } catch { return; } sxMessage(s, m); };
+    ws.onclose = () => sxClosed(s);
+  }
+
+  function sxMessage(s, m) {
+    if (m.error_code || m.error_type) { s.error = m; return; }   // the server closes right after
+    let live = '', heard = false;
+    for (const t of m.tokens || []) {
+      if (t.translation_status === 'translation') continue;
+      if (t.text === '<end>' || t.text === '<fin>') { if (t.is_final) s.endpoint = true; continue; }
+      heard = true;
+      if (t.is_final) { s.final += t.text; s.lastFinalAt = Date.now(); } else live += t.text;
+    }
+    if (heard) {
+      sxRetries = 0;
+      if (Date.now() - lastActivity > PARA_GAP) breakPending = true;
+      lastActivity = Date.now();
+    }
+    s.live = live;
+    sxFlush(s, s.endpoint); s.endpoint = false;
+    if (s === sx) setLive(s.lang, (s.final + s.live).trim());
+  }
+
+  // Send the final words in chunks: at punctuation once a chunk is long enough,
+  // at a word boundary if the speaker runs on without punctuation, or all at a pause.
+  function sxFlush(s, all) {
+    const text = s.final;
+    if (!text.trim()) { s.final = ''; return; }
+    let cut = all ? text.length : -1;
+    if (cut < 0) {
+      const need = CHUNK[s.lang];
+      const re = s.lang === 'zh' ? /[，。！？；：,.!?;:]/g : /[,.;:!?…](?=\s|$)/g;
+      let m;
+      while ((m = re.exec(text))) if (m.index + 1 >= need * 0.4) cut = m.index + 1;
+      if (cut < 0 && text.length >= need * 2) {
+        if (s.lang === 'zh') cut = zhBoundary(text, 0, text.length);
+        else { const sp = text.lastIndexOf(' '); cut = sp > 0 ? sp : -1; }
+      }
+    }
+    if (cut <= 0) return;
+    s.final = text.slice(cut);
+    commit(s.lang, text.slice(0, cut));
+  }
+
+  function sxErrorText(e) {
+    const code = +e.error_code;
+    return code === 401 ? 'Soniox API Key 不对，请在设置里检查。'
+      : code === 402 ? 'Soniox 账户余额不足，请到 console.soniox.com 充值后再开始。'
+      : code === 403 ? 'Soniox 账户没有实时识别的权限' + (e.error_message ? '（' + e.error_message + '）' : '') + '。'
+      : code === 429 ? 'Soniox 同时连接太多，请稍后再试。'
+      : 'Soniox 出错：' + (e.error_message || e.error_type || code);
+  }
+
+  function sxClosed(s) {
+    s.timers.forEach(clearInterval);
+    sxFlush(s, true);                               // keep every word that was heard
+    if (s.live.trim()) { const l = s.live; s.live = ''; commit(s.lang, l); }
+    if (s !== sx) return;                           // an older connection finishing after a direction switch
+    sx = null;
+    setLive(null);
+    if (!running) return;
+    const e = s.error, code = e ? +e.error_code : 0;
+    if ([400, 401, 402, 403].includes(code)) { stop(); notice(sxErrorText(e)); return; }
+    if (!s.started && !sxOpenedOnce) {               // the very first connection was refused
+      stop(); notice('连不上 Soniox。请检查 API Key 和网络，可以在设置里点「测试连接」看具体原因。'); return;
+    }
+    sxRetries++;
+    if (sxRetries > 6) { stop(); notice('Soniox 连接反复断开，已经停下。请检查网络后重新开始。'); return; }
+    // dropped connection, time limit or a busy server: reconnect, keeping the audio recorded meanwhile
+    setTimeout(() => { if (running && !sx && activeAsr === 'soniox') sxOpen(settings.dir); }, Math.min(8000, 400 * 2 ** (sxRetries - 1)));
+  }
+  function sxEnd(s) {                               // ask Soniox for the last words, then close
+    if (!s || s.closing) return;
+    s.closing = true;
+    try { if (s.ws.readyState === WebSocket.OPEN) s.ws.send(''); else s.ws.close(); } catch {}
+    setTimeout(() => { try { s.ws.close(); } catch {} }, 5000);
+  }
+
+  function sxProbe(key) {                           // for the settings "test" button
+    return new Promise((resolve, reject) => {
+      const t0 = Date.now();
+      let ws, err = null, done = false;
+      try { ws = new WebSocket(SONIOX_URL, ['soniox-api-key', key]); } catch { reject(new Error('Key 的格式不对')); return; }
+      const finish = (fn) => { if (done) return; done = true; clearTimeout(timer); try { ws.close(); } catch {} fn(); };
+      const timer = setTimeout(() => finish(() => reject(new Error('连接超时，请检查网络'))), 12000);
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ model: SONIOX_MODEL, audio_format: 'pcm_s16le', sample_rate: 16000, num_channels: 1 }));
+        ws.send(new Int16Array(8000).buffer);      // half a second of silence
+        ws.send('');
+      };
+      ws.onmessage = (ev) => {
+        let m; try { m = JSON.parse(ev.data); } catch { return; }
+        if (m.error_code || m.error_type) err = m;
+        if (m.finished) finish(() => resolve(Date.now() - t0));
+      };
+      ws.onclose = () => finish(() => reject(new Error(err ? sxErrorText(err) : '连不上 Soniox，请检查 Key 和网络')));
+    });
+  }
+
+  /* ================= start / stop ================= */
+  async function start() {
+    if (running || starting) return;
+    const soniox = useSoniox();
+    if (!soniox && !SR) { notice('这个浏览器没有自带语音识别。请用 Chrome 打开，或在设置里改用 Soniox 识别，它在任何浏览器里都能用。'); return; }
     notice('');
-    running = true; sessionStart = Date.now(); quickEnds = 0; netErrors = 0;
+    let ctx = null;
+    if (soniox) {
+      try { ctx = new AudioContext(); }              // created inside the click so it may start
+      catch { notice('这个浏览器不支持网页录音处理，没法用 Soniox。'); return; }
+    }
+    const fail = (msg) => { if (ctx) ctx.close().catch(() => {}); releaseCapture(); if (msg) notice(msg); };
+    starting = true; renderStatus();
+    try {
+      if (fromComputer()) {
+        if (!(soniox ? canCapture : canSystem)) { fail(systemUnsupported()); return; }
+        try { capture = await captureComputerAudio(); }
+        catch (err) {
+          capture = null;
+          if (err && err.code === 'no-audio') {
+            fail(err.surface === 'window'
+              ? '分享单个窗口时浏览器拿不到声音。请重新开始，改选一个标签页，或选「整个屏幕」并打开「分享系统音频」。'
+              : '没有收到声音：选择时要打开「分享标签页音频」或「分享系统音频」的开关。请重新开始再选一次。');
+          } else if (err && err.name === 'NotAllowedError') { fail(); toast('已取消分享'); }
+          else fail('无法获取电脑声音：' + ((err && err.message) || err));
+          return;
+        }
+        if (ttsBlocked() && settings.autoRead) notice('正在分享整个屏幕的声音，朗读的译文也会被收进去，所以这次不朗读。想同时朗读，请改为分享一个标签页。');
+      }
+      if (soniox) {
+        let mic = null;
+        try {
+          const stream = fromComputer()
+            ? new MediaStream([capture.track])
+            : (mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 } }));
+          audio = await openAudio(ctx, stream);
+          audio.mic = mic;
+          if (mic) mic.getAudioTracks().forEach((t) => { t.onended = () => { if (running) { stop(); notice('麦克风断开了。请检查麦克风后重新开始。'); } }; });
+        } catch (err) {
+          if (mic) mic.getTracks().forEach((t) => t.stop());
+          const n = err && err.name;
+          fail(n === 'NotAllowedError' ? '没有麦克风权限。请点地址栏左边的图标，把「麦克风」设为允许，然后重新开始。'
+            : n === 'NotFoundError' ? '找不到麦克风。请检查麦克风是否连接好。'
+            : '没法开始录音：' + ((err && err.message) || err));
+          return;
+        }
+      }
+    } finally { starting = false; renderStatus(); }
+    running = true; activeAsr = soniox ? 'soniox' : 'chrome';
+    sessionStart = Date.now(); quickEnds = 0; netErrors = 0; hiddenWarned = false; hiddenAt = 0;
     breakPending = true;                             // a new session starts a new paragraph
-    if (!rec) openRec(settings.dir);
+    if (soniox) { sxRetries = 0; sxOpenedOnce = false; sxOpen(settings.dir); }
+    else if (!rec) openRec(settings.dir);
     requestWake(); startClock(); renderStatus();
   }
   function stop() {
     running = false;
-    if (rec) rec.stop();
+    endRec();
+    if (sx) sxEnd(sx);
+    closeAudio();
+    releaseCapture();
     releaseWake(); stopClock(); renderStatus();
   }
   $('#btnGo').onclick = () => (running ? stop() : start());
@@ -722,13 +1110,44 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
     b.onclick = () => {
       if (settings.dir === b.dataset.dir) return;
       settings.dir = b.dataset.dir; saveSettings();
-      if (running && rec) rec.stop();                // onend reopens in the new language
+      if (running && activeAsr === 'soniox') {       // new connection with the new language; audio keeps flowing
+        const old = sx; sx = null; sxEnd(old); setLive(null); sxOpen(settings.dir);
+      } else if (running) endRec();                  // onend reopens in the new language
       renderStatus();
     };
   });
 
+  const srcSel = $('#srcSel');
+  if (isMobile) { srcSel.hidden = true; $('#controls').classList.add('nosrc'); settings.source = 'mic'; }
+  srcSel.querySelectorAll('button').forEach((b) => {
+    b.onclick = () => {
+      const v = b.dataset.src;
+      if (settings.source === v || starting) return;
+      if (v === 'system' && !(useSoniox() ? canCapture : canSystem)) { notice(systemUnsupported()); return; }
+      const wasRunning = running;
+      if (wasRunning) stop();
+      settings.source = v; saveSettings();
+      notice('');
+      renderStatus();
+      if (wasRunning) start();                       // still inside the click, so the share picker may open
+      else if (v === 'system') toast('点「开始同传」后，选中要翻译的标签页，并打开分享音频');
+    };
+  });
+
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && running) { if (!rec) openRec(settings.dir); requestWake(); }
+    if (document.hidden) { if (running) hiddenAt = Date.now(); }
+    else if (running && activeAsr !== 'chrome') { requestWake(); hiddenAt = 0; }   // Soniox kept listening
+    else if (running) {
+      if (!rec) openRec(settings.dir);
+      requestWake();
+      if (hiddenAt && Date.now() - hiddenAt > 5000 && lastActivity < hiddenAt && !hiddenWarned) {
+        hiddenWarned = true;
+        notice('刚才同传页面在后台，Chrome 可能暂停了识别。' + (fromComputer()
+          ? '把这个标签页拖出来单独成一个窗口，和视频或会议并排放，就不会中断。'
+          : '使用时请让这个页面保持在前台。'));
+      }
+      hiddenAt = 0;
+    }
     renderStatus();
   });
   document.addEventListener('keydown', (ev) => {
@@ -747,18 +1166,26 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
     const d = settings.dir;
     dock.dataset.from = d;
     document.querySelectorAll('.dir button').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.dir === d)));
+    srcSel.querySelectorAll('button').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.src === settings.source)));
     $('#dot').classList.toggle('on', running);
-    $('#stText').textContent = running
-      ? (document.hidden ? '页面在后台，回来后继续' : '正在听' + LANG[d].name + '，译成' + LANG[LANG[d].other].name)
-      : (SR ? '未开始' : '这个浏览器不支持语音识别');
+    const where = fromComputer() ? '电脑声音' + (capture && SURFACE[capture.surface] ? '（' + SURFACE[capture.surface] + '）' : '') + '里的' : '';
+    const eng = (running ? activeAsr === 'soniox' : useSoniox()) ? 'Soniox' : 'Chrome 识别';
+    $('#stText').textContent = starting
+      ? (fromComputer() && !capture ? '请在弹出的窗口里选中要翻译的标签页，并打开分享音频' : '正在准备…')
+      : running
+        ? (document.hidden && activeAsr === 'chrome' ? '页面在后台，回来后继续' : '正在听' + where + LANG[d].name + '，译成' + LANG[LANG[d].other].name + ' · ' + eng)
+        : (SR || useSoniox() ? '未开始 · ' + (fromComputer() ? '电脑声音' : '麦克风') + ' · ' + eng : '这个浏览器不支持语音识别');
     $('#stTime').textContent = running ? '· ' + fmtDur(Date.now() - sessionStart) : '';
     const avg = latencies.length ? latencies.reduce((a, b) => a + b, 0) / latencies.length / 1000 : 0;
     $('#stLat').textContent = latencies.length ? '· 延迟 ' + avg.toFixed(1) + ' s' : '';
     const go = $('#btnGo');
     go.classList.toggle('on', running);
+    go.disabled = starting;
     go.innerHTML = running
       ? '<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>停止'
-      : '<svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1M12 18v4M8 22h8"/></svg>开始同传';
+      : fromComputer()
+        ? '<svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>开始同传'
+        : '<svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1M12 18v4M8 22h8"/></svg>开始同传';
     go.setAttribute('aria-label', running ? '停止同传' : '开始同传');
   }
 
@@ -782,10 +1209,11 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
   const ttsQ = [];
   let ttsBusy = false;
   function queueTTS(seg, from) {
-    if (!settings.autoRead || !canSpeak) return;
+    if (!settings.autoRead || !canSpeak || ttsBlocked()) return;
     ttsQ.push({ seg, lang: LANG[from].other });
   }
   function pumpTTS() {
+    if (ttsBlocked()) { ttsQ.length = 0; return; }
     if (ttsBusy || !settings.autoRead || !canSpeak) return;
     if (ttsQ.length > 8) ttsQ.splice(0, ttsQ.length - 3); // fell too far behind: jump to the latest
     const head = ttsQ[0];
@@ -823,7 +1251,8 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
   btnRead.onclick = () => {
     if (!canSpeak) { toast('这个浏览器不支持朗读'); return; }
     settings.autoRead = !settings.autoRead; saveSettings(); renderTools();
-    if (settings.autoRead) toast('之后的译文会自动读出来，请戴耳机');
+    if (settings.autoRead && ttsBlocked()) toast('分享整个屏幕时不朗读，否则朗读声会被收进去');
+    else if (settings.autoRead) toast(fromComputer() ? '之后的译文会自动读出来' : '之后的译文会自动读出来，请戴耳机');
     else { stopTTS(); toast('已关闭朗读'); }
   };
   $('#btnView').onclick = () => {
@@ -841,6 +1270,11 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
   /* ================= settings & records ================= */
   const sheet = $('#sheet');
   function syncSheet() {
+    $('#asrChrome').checked = settings.asr !== 'soniox';
+    $('#asrSoniox').checked = settings.asr === 'soniox';
+    $('#sxRow').hidden = settings.asr !== 'soniox';
+    $('#sxKey').value = settings.sxKey;
+    $('#terms').value = settings.terms;
     $('#engFree').checked = settings.engine !== 'deepseek';
     $('#engDs').checked = settings.engine === 'deepseek';
     $('#dsRow').hidden = settings.engine !== 'deepseek';
@@ -853,6 +1287,21 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
   $('#sheetClose').onclick = closeSheet;
   sheet.addEventListener('click', (ev) => { if (ev.target === sheet) closeSheet(); });
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !sheet.hidden) closeSheet(); });
+  document.querySelectorAll('input[name="asr"]').forEach((r) => r.addEventListener('change', () => {
+    settings.asr = r.value; saveSettings(); $('#sxRow').hidden = settings.asr !== 'soniox';
+    if (running) { stop(); toast('识别方式已切换，请重新点「开始同传」'); }
+    renderStatus();
+  }));
+  $('#sxKey').addEventListener('input', (ev) => { settings.sxKey = ev.target.value.trim(); saveSettings(); $('#sxResult').textContent = ''; renderStatus(); });
+  $('#sxTest').onclick = async () => {
+    const out = $('#sxResult'), btn = $('#sxTest');
+    if (!settings.sxKey) { out.textContent = '先填 API Key'; return; }
+    btn.disabled = true; out.textContent = '正在连接…';
+    try { const ms = await sxProbe(settings.sxKey); out.textContent = '连上了（' + (ms / 1000).toFixed(1) + ' 秒），可以用了'; }
+    catch (err) { out.textContent = '没连上：' + ((err && err.message) || '未知错误'); }
+    finally { btn.disabled = false; }
+  };
+  $('#terms').addEventListener('input', (ev) => { settings.terms = ev.target.value; saveSettings(); });
   document.querySelectorAll('input[name="engine"]').forEach((r) => r.addEventListener('change', () => {
     settings.engine = r.value; saveSettings(); $('#dsRow').hidden = settings.engine !== 'deepseek';
   }));
@@ -922,7 +1371,7 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; str
   renderTools();
   renderStatus();
   if (paras.length) { intro.hidden = true; paras.forEach(renderPara); requestAnimationFrame(toBottom); }
-  if (!SR) notice('这个浏览器不支持语音识别（例如 Firefox）。请用 Chrome 或 Edge 打开。');
+  if (!SR && !useSoniox()) notice('这个浏览器没有自带语音识别。请用 Chrome 打开，或在设置里改用 Soniox 识别，它在任何浏览器里都能用。');
   else if (!window.isSecureContext) notice('当前网址不是 https，浏览器会拒绝使用麦克风。请直接用 Chrome 打开这个文件，或放到 https 网址上。');
 })();
 </script>
